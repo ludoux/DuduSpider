@@ -64,9 +64,9 @@ namespace Ludoux.DuduSpider
         public string External_url { get => storyJson._external_url; }
 
         public object[] Manifest { get => _manifest; }
-        private object[] _manifest = new object[2];
-        private string[] _storyManifest;
-        private List<string> _imageManifest;
+        private object[] _manifest = new object[2];//{下面两个}
+        private string[] _storyManifest;//{本地地址, 标题}
+        private List<string> _imageManifest = new List<string>();
         internal class StoryJson
         {
             [JsonProperty("body", NullValueHandling = NullValueHandling.Ignore)]
@@ -101,14 +101,12 @@ namespace Ludoux.DuduSpider
         }
         public Story(string raw)
         {
+            
             storyJson = JsonConvert.DeserializeObject<StoryJson>(raw);
             MakeHtml();
         }
-        public object[] MakeHtml()
+        public void MakeHtml()
         {
-           
-            List<string> imageManifest = new List<string>();
-
             StringBuilder sb = new StringBuilder();
             if(!Body.Contains("该文章暂不支持阅读模式"))
             {//从 Body 读入
@@ -126,14 +124,18 @@ namespace Ludoux.DuduSpider
                 MatchCollection collection = r.Matches(sb.ToString());
                 Console.Write(" <"+ collection.Count.ToString());
                 if (collection.Count > 8)
-                    return _manifest;
+                {
+                    _manifest = new object[2] { new string[] { @".\\files\html\empty.html", "ERROR" }, new List<string>() };
+                    return;
+                }
+
                 foreach (Match m in collection)
                 {
                     if (m.Value != "")
                     {
                         string fileName = HttpRequest.DownloadFile(m.Value, @".\\files\image\");
                         sb.Replace(m.Value, @"..\image\" + fileName);
-                        imageManifest.Add(@".\\files\image\" + fileName);
+                        _imageManifest.Add(@".\\files\image\" + fileName);
                     }
                 }
                 File.WriteAllText(@".\\files\html\" + HashTools.Hash_MD5_16(Title) + ".html", sb.ToString(), Encoding.UTF8);
@@ -141,14 +143,15 @@ namespace Ludoux.DuduSpider
                 _storyManifest = new string[] { @".\\files\html\" + HashTools.Hash_MD5_16(Title) + ".html", Title };
                 _manifest[0] = _storyManifest;
                 _manifest[1] = _imageManifest;
-                return _manifest;
+                
             }
             else
             {//从 External_url 获取
                 if (!External_url.Contains("mp.weixin.qq.com"))//目前仅分析微信公众号
                 {
                     Console.Write(" <外站");
-                    return _manifest;
+                    _manifest = new object[2] { new string[] { @".\\files\html\empty.html", "ERROR" }, new List<string>() };
+                    return;
                 }
                     
                 Console.Write(" <微信");
@@ -158,14 +161,16 @@ namespace Ludoux.DuduSpider
                 MatchCollection collection = r.Matches(request.ToString());
                 Console.Write(" <" + collection.Count.ToString());
                 if (collection.Count > 8)
-                    return _manifest;
+                {
+                    _manifest = new object[2] { new string[] { @".\\files\html\empty.html", "ERROR" }, new List<string>() };
+                    return;
+                }
 
                 request.Replace("data-src", "src");
                 File.WriteAllText(@".\\files\html\" + HashTools.Hash_MD5_16(Title) + ".html", request.ToString(), Encoding.UTF8);
                 _storyManifest = new string[] { @".\\files\html\" + HashTools.Hash_MD5_16(Title) + ".html", Title };
                 _manifest[0] = _storyManifest;
-                _manifest[1] = imageManifest;
-                return _manifest;
+                _manifest[1] = _imageManifest;
             }
         }
         private string cleanHtml(string htmlSource)
