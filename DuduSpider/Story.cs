@@ -99,13 +99,18 @@ namespace Ludoux.DuduSpider
             [JsonProperty("external_url", NullValueHandling = NullValueHandling.Ignore)]
             internal string _external_url;
         }
-        public Story(string raw)
+        /// <summary>
+        /// 初始化就会写 .html 文件啦！
+        /// </summary>
+        /// <param name="json"></param>
+        public Story(string json)
         {
             
-            storyJson = JsonConvert.DeserializeObject<StoryJson>(raw);
-            MakeHtml();
+            storyJson = JsonConvert.DeserializeObject<StoryJson>(json);
+            MakeHtmlFile();
         }
-        public void MakeHtml()
+
+        public void MakeHtmlFile()
         {
             StringBuilder sb = new StringBuilder();
             if(!Body.Contains("该文章暂不支持阅读模式"))
@@ -118,7 +123,7 @@ namespace Ludoux.DuduSpider
                     //string fileName = HttpRequest.DownloadFile(Css[i], extension:".css", directory:@".\\files\css\");
                     //sb.AppendFormat(@"<link rel=""stylesheet"" type=""text/css"" href=""{1}"">", i, @"../css/" + fileName);
                 //}
-                sb.AppendFormat("</head><body>{0}</body>", cleanHtml(Body));
+                sb.AppendFormat("</head><body>{0}</body>", cleanHtmlText(Body));
 
                 Regex r = new Regex(@"(?<=<img.*?src="").*?(?="".*?>)");
                 MatchCollection collection = r.Matches(sb.ToString());
@@ -155,7 +160,7 @@ namespace Ludoux.DuduSpider
                 }
                     
                 Console.Write(" <微信");
-                StringBuilder request = new StringBuilder(cleanHtml(HttpRequest.DownloadString(External_url, "")));
+                StringBuilder request = new StringBuilder(cleanHtmlText(HttpRequest.DownloadString(External_url, "")));
                 
                 Regex r = new Regex(@"(?<=<img.*?src="").*?(?="".*?>)", RegexOptions.Singleline);
                 MatchCollection collection = r.Matches(request.ToString());
@@ -181,7 +186,7 @@ namespace Ludoux.DuduSpider
                 _manifest[1] = _imageManifest;
             }
         }
-        private string cleanHtml(string htmlSource)
+        private string cleanHtmlText(string htmlSource)
         {
             Regex r = new Regex("<script.*?</script>", RegexOptions.Singleline);
             MatchCollection collection = r.Matches(htmlSource.ToString());
@@ -204,6 +209,21 @@ namespace Ludoux.DuduSpider
             }
             htmlSource = htmlSource.Replace("</span>", "");
             return htmlSource;
+        }
+        public override bool Equals(object obj)
+        {
+            if (this.ToString() == ((Story)obj).ToString())
+                return true;
+            else
+                return false;
+        }
+        public override int GetHashCode()
+        {
+            return Id;
+        }
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(storyJson);
         }
     }
 }
