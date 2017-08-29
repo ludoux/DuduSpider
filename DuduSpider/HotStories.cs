@@ -13,7 +13,7 @@ namespace Ludoux.DuduSpider
         {
             List<Cell> cellList = new List<Cell>();
             List<Story> storyList = new List<Story>();
-            string webSource = HttpRequest.DownloadString("https://news-at.zhihu.com/api/7/explore/stories/hot");
+            string webSource = HttpRequest.DownloadString(string.Format(@"https://news-at.zhihu.com/api/{0}/explore/stories/hot", API));
             Regex r = new Regex(@"<a class=""article-cell"" href=""(?<url>.*?)"">\n\n<img class=""avatar"" src=""(?<avatar>.*?)"">\n<span class=""title"">(?<title>.*?)</span>\n<span class=""meta"">\n<i class=""icon""></i>\n<i>(?<views>\d*?)</i>\n</span>\n</a>", RegexOptions.CultureInvariant);
             /*<a class="article-cell" href="(?<url>.*?)">
              * 

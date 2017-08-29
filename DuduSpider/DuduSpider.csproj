@@ -6,6 +6,11 @@
     <RootNamespace>Ludoux.DuduSpider</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="files\**" />
+    <EmbeddedResource Remove="files\**" />
+    <None Remove="files\**" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 </Project>

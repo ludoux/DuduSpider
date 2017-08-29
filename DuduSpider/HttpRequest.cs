@@ -6,7 +6,7 @@ namespace Ludoux.DuduSpider
 {
     class HttpRequest
     {
-        public static string GetContent(string sURL, string referer = "https://zhihu.com", string userAgent = "Mozilla/5.0 (iPad; CPU OS 10_3_3 like Mac OS X) AppleWebKit/603.3.8 (KHTML, like Gecko) Mobile/14G60",string cookie = "")
+        public static string GetContent(string sURL, string referer = "https://zhihu.com", string userAgent = "Mozilla/5.0 (iPad; CPU OS 10_3_3 like Mac OS X) AppleWebKit/603.3.8 (KHTML, like Gecko) Mobile/14G60",string cookie = "", string authorization = "")
         {
 
             string sContent = ""; //Content
@@ -17,7 +17,9 @@ namespace Ludoux.DuduSpider
                 
                 wrGETURL.Referer = referer;
                 wrGETURL.Headers.Set(HttpRequestHeader.UserAgent, userAgent);
-                
+                wrGETURL.Headers.Set(HttpRequestHeader.Cookie, cookie);
+                wrGETURL.Headers.Set(HttpRequestHeader.Authorization, authorization);
+
                 Stream objStream = wrGETURL.GetResponse().GetResponseStream();
                 StreamReader objReader = new StreamReader(objStream);
                 while (sLine != null)
@@ -33,7 +35,7 @@ namespace Ludoux.DuduSpider
             }
             return sContent;
         }
-        public static string DownloadString(string url, string referer = "https://zhihu.com", string userAgent = "Mozilla/5.0 (iPad; CPU OS 10_3_3 like Mac OS X) AppleWebKit/603.3.8 (KHTML, like Gecko) Mobile/14G60", string cookie = "")
+        public static string DownloadString(string url, string referer = "https://zhihu.com", string userAgent = "Mozilla/5.0 (iPad; CPU OS 10_3_3 like Mac OS X) AppleWebKit/603.3.8 (KHTML, like Gecko) Mobile/14G60", string cookie = "", string authorization = "")
         {
             try
             {
@@ -42,10 +44,11 @@ namespace Ludoux.DuduSpider
                     web.Headers.Set(HttpRequestHeader.Referer, referer);
                     web.Headers.Set(HttpRequestHeader.UserAgent, userAgent);
                     web.Headers.Set(HttpRequestHeader.Cookie, cookie);
+                    web.Headers.Set(HttpRequestHeader.Authorization, authorization);
                     return web.DownloadString(url);
                 }
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 return "";
             }
