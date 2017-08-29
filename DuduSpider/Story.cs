@@ -65,8 +65,8 @@ namespace Ludoux.DuduSpider
 
         public object[] Manifest { get => _manifest; }
         private object[] _manifest = new object[2];//{下面两个}
-        private string[] _storyManifest;//{本地地址, 标题}
-        private List<string> _imageManifest = new List<string>();
+        private string[] _storyManifest;//{本地地址, 标题} （在“根”目录）./files/html/6F489B596D7686A2.html, 美国核动力航母一直在下饺子，中国想追上非常不容易
+        private List<string> _imageManifest = new List<string>();//（在“根”目录）./files/image/981639B8C1BB31C5.jpg
         internal class StoryJson
         {
             [JsonProperty("body", NullValueHandling = NullValueHandling.Ignore)]
@@ -116,7 +116,7 @@ namespace Ludoux.DuduSpider
                 //for(int i = 0; i < Css.Length; i++)
                 //{
                     //string fileName = HttpRequest.DownloadFile(Css[i], extension:".css", directory:@".\\files\css\");
-                    //sb.AppendFormat(@"<link rel=""stylesheet"" type=""text/css"" href=""{1}"">", i, @"..\css\" + fileName);
+                    //sb.AppendFormat(@"<link rel=""stylesheet"" type=""text/css"" href=""{1}"">", i, @"../css/" + fileName);
                 //}
                 sb.AppendFormat("</head><body>{0}</body>", cleanHtml(Body));
 
@@ -125,7 +125,7 @@ namespace Ludoux.DuduSpider
                 Console.Write(" <"+ collection.Count.ToString());
                 if (collection.Count > 8)
                 {
-                    _manifest = new object[2] { new string[] { @".\\files\html\empty.html", "ERROR" }, new List<string>() };
+                    _manifest = new object[2] { new string[] { @"", "" }, new List<string>() };
                     return;
                 }
 
@@ -133,14 +133,14 @@ namespace Ludoux.DuduSpider
                 {
                     if (m.Value != "")
                     {
-                        string fileName = HttpRequest.DownloadFile(m.Value, @".\\files\image\");
-                        sb.Replace(m.Value, @"..\image\" + fileName);
-                        _imageManifest.Add(@".\\files\image\" + fileName);
+                        string fileName = HttpRequest.DownloadFile(m.Value, @"./files/image/");
+                        sb.Replace(m.Value, @"../image/" + fileName);
+                        _imageManifest.Add(@"./files/image/" + fileName);
                     }
                 }
-                File.WriteAllText(@".\\files\html\" + HashTools.Hash_MD5_16(Title) + ".html", sb.ToString(), Encoding.UTF8);
+                File.WriteAllText(@"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", sb.ToString(), Encoding.UTF8);
 
-                _storyManifest = new string[] { @".\\files\html\" + HashTools.Hash_MD5_16(Title) + ".html", Title };
+                _storyManifest = new string[] { @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", Title };
                 _manifest[0] = _storyManifest;
                 _manifest[1] = _imageManifest;
                 
@@ -150,25 +150,33 @@ namespace Ludoux.DuduSpider
                 if (!External_url.Contains("mp.weixin.qq.com"))//目前仅分析微信公众号
                 {
                     Console.Write(" <外站");
-                    _manifest = new object[2] { new string[] { @".\\files\html\empty.html", "ERROR" }, new List<string>() };
+                    _manifest = new object[2] { new string[] { @"", "" }, new List<string>() };
                     return;
                 }
                     
                 Console.Write(" <微信");
                 StringBuilder request = new StringBuilder(cleanHtml(HttpRequest.DownloadString(External_url, "")));
-
+                
                 Regex r = new Regex(@"(?<=<img.*?src="").*?(?="".*?>)", RegexOptions.Singleline);
                 MatchCollection collection = r.Matches(request.ToString());
                 Console.Write(" <" + collection.Count.ToString());
                 if (collection.Count > 8)
                 {
-                    _manifest = new object[2] { new string[] { @".\\files\html\empty.html", "ERROR" }, new List<string>() };
+                    _manifest = new object[2] { new string[] { @"", "" }, new List<string>() };
                     return;
                 }
-
+                foreach (Match m in collection)
+                {
+                    if (m.Value != "")
+                    {
+                        string fileName = HttpRequest.DownloadFile(m.Value, @"./files/image/","");
+                        request.Replace(m.Value, @"../image/" + fileName);
+                        _imageManifest.Add(@"./files/image/" + fileName);
+                    }
+                }
                 request.Replace("data-src", "src");
-                File.WriteAllText(@".\\files\html\" + HashTools.Hash_MD5_16(Title) + ".html", request.ToString(), Encoding.UTF8);
-                _storyManifest = new string[] { @".\\files\html\" + HashTools.Hash_MD5_16(Title) + ".html", Title };
+                File.WriteAllText(@"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", request.ToString(), Encoding.UTF8);
+                _storyManifest = new string[] { @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", Title };
                 _manifest[0] = _storyManifest;
                 _manifest[1] = _imageManifest;
             }

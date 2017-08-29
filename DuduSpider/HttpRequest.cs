@@ -35,13 +35,21 @@ namespace Ludoux.DuduSpider
         }
         public static string DownloadString(string url, string referer = "https://zhihu.com", string userAgent = "Mozilla/5.0 (iPad; CPU OS 10_3_3 like Mac OS X) AppleWebKit/603.3.8 (KHTML, like Gecko) Mobile/14G60", string cookie = "")
         {
-            using (var web = new WebClient())
+            try
             {
-                web.Headers.Set(HttpRequestHeader.Referer, referer);
-                web.Headers.Set(HttpRequestHeader.UserAgent, userAgent);
-                web.Headers.Set(HttpRequestHeader.Cookie, cookie);
-                return web.DownloadString(url);
+                using (var web = new WebClient())
+                {
+                    web.Headers.Set(HttpRequestHeader.Referer, referer);
+                    web.Headers.Set(HttpRequestHeader.UserAgent, userAgent);
+                    web.Headers.Set(HttpRequestHeader.Cookie, cookie);
+                    return web.DownloadString(url);
+                }
             }
+            catch(Exception ex)
+            {
+                return "";
+            }
+
         }
 
         public static string DownloadFile(string url, string directory, string referer = "https://zhihu.com", string userAgent = "Mozilla/5.0 (iPad; CPU OS 10_3_3 like Mac OS X) AppleWebKit/603.3.8 (KHTML, like Gecko) Mobile/14G60", string cookie = "", string extension = "A")

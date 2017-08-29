@@ -36,8 +36,15 @@ namespace Ludoux.DuduSpider
                 Console.Write("\r\n" + DateTime.Now.TimeOfDay.ToString() + "[" + i++.ToString() + "]" + c.Title);
                 storyList.Add(new Story(HttpRequest.DownloadString(string.Format(@"https://news-at.zhihu.com/api/{0}/story/{1}", API, c.Id))));
             }
-            new KindleGen(storyList, "Hello", "zh-cn", "C", "a", "s", "2017-10-10", "sf").MakePeriodical();
-            return storyList;
+
+            List<Story> notEmptyList = new List<Story>();
+            foreach (Story s in storyList)
+            {
+                if (((string[])s.Manifest[0])[0] != "")//为空的就是前面获取时直接 return 的文章，不进入制作电子书的环节
+                    notEmptyList.Add(s);
+            }
+
+            return notEmptyList;
         }
 
     }
