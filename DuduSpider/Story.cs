@@ -12,11 +12,11 @@ namespace Ludoux.DuduSpider
 
     class Story
     {
-        StoryJson storyJson;
+        StoryJson storyJson = new StoryJson();
         /// <summary>
         /// 阅读模式的 html，可能存在<div style='height: 100vh; display: flex; align-items: center; justify-content: center;'>该文章暂不支持阅读模式</div>
         /// </summary>
-        public string Body { get => storyJson._body; }
+        public string Body { get => storyJson._body ?? ""; }
 
         /// <summary>
         /// 标题
@@ -63,10 +63,8 @@ namespace Ludoux.DuduSpider
         /// </summary>
         public string External_url { get => storyJson._external_url; }
 
-        public object[] Manifest { get => _manifest; }
-        private object[] _manifest = new object[2];//{下面两个}
-        private string[] _storyManifest;//{本地地址, 标题} （在“根”目录）./files/html/6F489B596D7686A2.html, 美国核动力航母一直在下饺子，中国想追上非常不容易
-        private List<string> _imageManifest = new List<string>();//（在“根”目录）./files/image/981639B8C1BB31C5.jpg
+        public Manifestx Manifest { get => _manifest; }
+        private Manifestx _manifest = new Manifestx();//{下面两个}
         internal class StoryJson
         {
             [JsonProperty("body", NullValueHandling = NullValueHandling.Ignore)]
@@ -99,22 +97,66 @@ namespace Ludoux.DuduSpider
             [JsonProperty("external_url", NullValueHandling = NullValueHandling.Ignore)]
             internal string _external_url;
         }
+        internal class Manifestx
+        {
+            public Manifestx()
+            {
+
+            }
+            public Manifestx(List<string> storyManifest, List<string> imageManifest)
+            {
+                this._storyManifest = storyManifest;
+                this._imageManifest = imageManifest;
+            }
+            internal List<string> _storyManifest = new List<string>(2);//{本地地址, 标题} （在“根”目录）./files/html/6F489B596D7686A2.html, 美国核动力航母一直在下饺子，中国想追上非常不容易
+            internal List<string> _imageManifest = new List<string>();//（在“根”目录）./files/image/981639B8C1BB31C5.jpg
+            public override bool Equals(object obj)
+            {
+                return this._storyManifest[0] == ((Manifestx)obj)._storyManifest[0];
+            }
+            public override int GetHashCode()
+            {
+                return _storyManifest[0].GetHashCode();
+            }
+            public List<string> this[int index]
+            {
+                get
+                {
+                    if (index == 0)
+                        return _storyManifest;
+                    else if (index == 1)
+                        return _imageManifest;
+                    return null;
+                }
+                set
+                {
+                    if (index == 0)
+                        _storyManifest = value;
+                    else if (index == 1)
+                        _imageManifest = value;
+                }
+            }
+        }
         /// <summary>
         /// 初始化就会写 .html 文件啦！
         /// </summary>
         /// <param name="json"></param>
         public Story(string json)
         {
+            StoryJson s = JsonConvert.DeserializeObject<StoryJson>(json);
+            if(s != null)
+            {
+                storyJson = JsonConvert.DeserializeObject<StoryJson>(json);
+                MakeHtmlFile();
+            }
             
-            storyJson = JsonConvert.DeserializeObject<StoryJson>(json);
-            MakeHtmlFile();
         }
 
         public void MakeHtmlFile()
         {
             StringBuilder sb = new StringBuilder();
             if(!Body.Contains("该文章暂不支持阅读模式"))
-            {//从 Body 读入
+            {//从 Body 读入F
                 Console.Write(" <内置");
                 sb.Append("<head>");
                 //为了更加简洁的 html 文件，不写入 css
@@ -130,24 +172,25 @@ namespace Ludoux.DuduSpider
                 Console.Write(" <"+ collection.Count.ToString());
                 if (collection.Count > 8)
                 {
-                    _manifest = new object[2] { new string[] { @"", "" }, new List<string>() };
+                    _manifest._storyManifest = new List<string>() { "", "" };
+                    _manifest._imageManifest = new List<string>();
                     return;
                 }
-
                 foreach (Match m in collection)
                 {
                     if (m.Value != "")
                     {
                         string fileName = HttpRequest.DownloadFile(m.Value, @"./files/image/");
-                        sb.Replace(m.Value, @"../image/" + fileName);
-                        _imageManifest.Add(@"./files/image/" + fileName);
+                        if(fileName != "")
+                        {
+                            sb.Replace(m.Value, @"../image/" + fileName);
+                            _manifest._imageManifest.Add(@"./files/image/" + fileName);
+                        }
+                        
                     }
                 }
                 File.WriteAllText(@"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", sb.ToString(), Encoding.UTF8);
-
-                _storyManifest = new string[] { @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", Title };
-                _manifest[0] = _storyManifest;
-                _manifest[1] = _imageManifest;
+                _manifest._storyManifest = new List<string>() { @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", Title };
                 
             }
             else
@@ -155,7 +198,8 @@ namespace Ludoux.DuduSpider
                 if (!External_url.Contains("mp.weixin.qq.com"))//目前仅分析微信公众号
                 {
                     Console.Write(" <外站");
-                    _manifest = new object[2] { new string[] { @"", "" }, new List<string>() };
+                    _manifest._storyManifest = new List<string>() { "", "" };
+                    _manifest._imageManifest = new List<string>();
                     return;
                 }
                     
@@ -167,7 +211,8 @@ namespace Ludoux.DuduSpider
                 Console.Write(" <" + collection.Count.ToString());
                 if (collection.Count > 8)
                 {
-                    _manifest = new object[2] { new string[] { @"", "" }, new List<string>() };
+                    _manifest._storyManifest = new List<string>() { "", "" };
+                    _manifest._imageManifest = new List<string>();
                     return;
                 }
                 foreach (Match m in collection)
@@ -175,15 +220,17 @@ namespace Ludoux.DuduSpider
                     if (m.Value != "")
                     {
                         string fileName = HttpRequest.DownloadFile(m.Value, @"./files/image/","");
-                        request.Replace(m.Value, @"../image/" + fileName);
-                        _imageManifest.Add(@"./files/image/" + fileName);
+                        if (fileName != "")
+                        {
+                            sb.Replace(m.Value, @"../image/" + fileName);
+                            _manifest._imageManifest.Add(@"./files/image/" + fileName);
+                        }
                     }
                 }
                 request.Replace("data-src", "src");
                 File.WriteAllText(@"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", request.ToString(), Encoding.UTF8);
-                _storyManifest = new string[] { @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", Title };
-                _manifest[0] = _storyManifest;
-                _manifest[1] = _imageManifest;
+
+                _manifest._storyManifest = new List<string> { @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", Title };
             }
         }
         private string cleanHtmlText(string htmlSource)
@@ -212,7 +259,7 @@ namespace Ludoux.DuduSpider
         }
         public override bool Equals(object obj)
         {
-            if (this.ToString() == ((Story)obj).ToString())
+            if (Id == ((Story)obj).Id)
                 return true;
             else
                 return false;

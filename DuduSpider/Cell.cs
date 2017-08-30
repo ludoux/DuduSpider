@@ -80,7 +80,7 @@ namespace Ludoux.DuduSpider
         }
         public override bool Equals(object obj)
         {
-            if (this.ToString() == ((Cell)obj).ToString())
+            if (Id == ((Cell)obj).Id)
                 return true;
             else
                 return false;
@@ -93,5 +93,6 @@ namespace Ludoux.DuduSpider
         {
             return JsonConvert.SerializeObject(cellJson);
         }
+        
     }
 }

@@ -7,7 +7,7 @@ namespace Ludoux.DuduSpider
 {
     class KindleGen
     {
-        private List<object[]> manifestList;
+        private List<Story.Manifestx> manifestList;
         private List<object[]> contents;//{string contentLabel, int[] i}每一个 object[] 为一个目录， i 为在 list 中的位置，从 0 算起
         private string title;
         private string language;
@@ -16,7 +16,7 @@ namespace Ludoux.DuduSpider
         private string subject;
         private string date;
         private string description;
-        public KindleGen(List<object[]> manifestList, string title, string language, string creator, string publisher, string subject, string date, string description, List<object[]> contents)
+        public KindleGen(List<Story.Manifestx> manifestList, string title, string language, string creator, string publisher, string subject, string date, string description, List<object[]> contents)
         {
             this.manifestList = manifestList;
             this.title = title;
@@ -59,12 +59,12 @@ namespace Ludoux.DuduSpider
 @"</metadata>");
             opf.Append(Environment.NewLine +  "<manifest>");
             int i = 0;
-            foreach (object[] m in manifestList)
+            foreach (Story.Manifestx m in manifestList)
             {
-                opf.AppendFormat(Environment.NewLine + @"    <item href=""{0}"" media-type=""application/xhtml+xml"" id=""{1}""/>", ((string[])m[0])[0].Replace("/files", ""), string.Format("{0:D3}-html", ++i));//添加内部文章 html
+                opf.AppendFormat(Environment.NewLine + @"    <item href=""{0}"" media-type=""application/xhtml+xml"" id=""{1}""/>", (m[0])[0].Replace("/files", ""), string.Format("{0:D3}-html", ++i));//添加内部文章 html
             }
             i = 0;
-            foreach (object[] m in manifestList)
+            foreach (Story.Manifestx m in manifestList)
             {
                 foreach(string ima in (List<string>)m[1])
                 {
@@ -79,7 +79,7 @@ namespace Ludoux.DuduSpider
                         case ".png":
                             type = "image/png"; break;
                         default:
-                            break;
+                            continue;//不添加这个图片
                     }
                     opf.AppendFormat(Environment.NewLine + @"    <item href=""{0}"" media-type=""{1}"" id=""{2}""/>", ima.Replace(@"/files", ""), type, string.Format("{0:D3}-image", ++i));//添加 html 对应的图片
                 }
@@ -138,7 +138,7 @@ namespace Ludoux.DuduSpider
 @"                <navLabel>" + Environment.NewLine +
 @"                    <text>{2}</text>" + Environment.NewLine +
 @"                </navLabel>" + Environment.NewLine +
-@"                <content src=""{3}""/>", playOrder, string.Format("{0:D3}-nav", i + 1), contents[i][0], ((string[])manifestList[((int[])contents[i][1])[0]][0])[0].Replace(@"./files/html/", @"../html/"));//{3}为每个目录第一个文章文件路径（网格模式下），丧心病狂般的[]
+@"                <content src=""{3}""/>", playOrder, string.Format("{0:D3}-nav", i + 1), contents[i][0], (manifestList[((int[])contents[i][1])[0]][0])[0].Replace(@"./files/html/", @"../html/"));//{3}为每个目录第一个文章文件路径（网格模式下），丧心病狂般的[]
                 playOrder++;
                 for (int j = 0; j < ((int[])contents[i][1]).Length; j++)
                 {//j 为每个目录内部的文章编号
@@ -148,7 +148,7 @@ namespace Ludoux.DuduSpider
 @"                        <text>{2}</text>" + Environment.NewLine +
 @"                    </navLabel>" + Environment.NewLine +
 @"                    <content src=""{3}""/>" + Environment.NewLine +
-@"                </navPoint>", playOrder, string.Format("{0:D3}-article", articleOrder), ((string[])manifestList[((int[])contents[i][1])[j]][0])[1], ((string[])manifestList[((int[])contents[i][1])[j]][0])[0].Replace(@"./files/html/", @"../html/"));
+@"                </navPoint>", playOrder, string.Format("{0:D3}-article", articleOrder), (manifestList[((int[])contents[i][1])[j]][0])[1], (manifestList[((int[])contents[i][1])[j]][0])[0].Replace(@"./files/html/", @"../html/"));
                     playOrder++;
                     articleOrder++;
                 }
@@ -179,7 +179,7 @@ namespace Ludoux.DuduSpider
                 for(int j = 0; j< ((int[])contents[i][1]).Length; j++)
                 {//j 为每个目录内部的文章编号
                     cons.AppendFormat(Environment.NewLine + 
-@"            <li><a href=""{0}"" >{1}</a></li>", ((string[])manifestList[j][0])[0].Replace(@"./files/html/", @"./"), ((string[])manifestList[j][0])[1]);//Replace 硬替换路径
+@"            <li><a href=""{0}"" >{1}</a></li>", (manifestList[j][0])[0].Replace(@"./files/html/", @"./"), (manifestList[j][0])[1]);//Replace 硬替换路径
                 }
                 cons.Append(Environment.NewLine +  
 @"        </ul>");

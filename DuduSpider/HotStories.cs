@@ -41,7 +41,7 @@ namespace Ludoux.DuduSpider
             List<Story> notEmptyList = new List<Story>();
             foreach (Story s in storyList)
             {
-                if (((string[])s.Manifest[0])[0] != "")//为空的就是前面获取时直接 return 的文章，不进入制作电子书的环节
+                if (s.Manifest[0].Count > 0 && s.Manifest[0][0] != "")//为空的就是前面获取时直接 return 的文章，不进入制作电子书的环节
                     notEmptyList.Add(s);
             }
 

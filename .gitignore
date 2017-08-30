@@ -300,3 +300,8 @@ __pycache__/
 
 # Other
 files/
+/DuduSpider/HomeTimeline_Cell.txt
+/DuduSpider/HomeTimeline_Story.txt
+/DuduSpider/HotStories_Cell.txt
+/DuduSpider/HotStories_Story.txt
+/DuduSpider/Manifest.txt
