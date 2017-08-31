@@ -12,13 +12,13 @@ namespace Ludoux.DuduSpider
         /// <summary>
         /// 抓取并保存（.html）最新的热门文章
         /// </summary>
-        /// <param name="clist">之前抓取时保存的 List Cell（以不抓取这部分），若初始化则抓取保存全部</param>
+        /// <param name="clist">之前抓取时保存的（首页流[去重]和热门流） List Cell（以不抓取这部分），若初始化则抓取保存全部</param>
         /// <returns>仅包括这次抓取的内容{ List Story, List Cell }</returns>
         public static object[] FetchHotStories(List<Cell> clist)
         {
             List<Story> newSList = new List<Story>();//这次需要抓取的
             List<Cell> newCList = fetchCellListOnly();
-            newCList = newCList.Except(clist).ToList();//在抓取到的首页 cell 中删去抓取过的内容，余下的就是这次需要抓取的
+            newCList = newCList.Except(clist).ToList();//在抓取到的 cell 中删去抓取过的内容，余下的就是这次需要抓取的
             return new object[] { fetch(newCList), newCList };
         }
         /// <summary>
