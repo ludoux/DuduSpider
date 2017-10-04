@@ -166,7 +166,7 @@ namespace ludoux.DuduSpider
             StringBuilder sb = new StringBuilder();
             if(!Body.Contains("该文章暂不支持阅读模式"))
             {//从 Body 读入F
-                Console.Write(" <内置");
+                LogWriter.Write(" <内置");
                 sb.Append("<head>");
                 //为了更加简洁的 html 文件，不写入 css
                 //for(int i = 0; i < Css.Length; i++)
@@ -178,7 +178,7 @@ namespace ludoux.DuduSpider
 
                 Regex r = new Regex(@"(?<=<img.*?src="").*?(?="".*?>)");
                 MatchCollection collection = r.Matches(sb.ToString());
-                Console.Write(" <"+ collection.Count.ToString());
+                LogWriter.Write(" <"+ collection.Count.ToString());
                 if (collection.Count > 8)
                 {
                     _manifest._storyManifest[0] = "";
@@ -210,19 +210,19 @@ namespace ludoux.DuduSpider
                 {
                     if (External_url.Host != host.Host)//如果外部链接不在allowed列表里，那么就不下载
                     {
-                        Console.Write(" <白名单外的外站");
+                        LogWriter.Write(" <白名单外的外站");
                         _manifest._storyManifest[0] = "";
                         _manifest._storyManifest[1] = "";
                         _manifest._imageManifest = new List<string>();
                         return;
                     }
                 }
-                Console.Write(" <白名单的外站");
+                LogWriter.Write(" <白名单的外站");
                 StringBuilder request = new StringBuilder(cleanHtmlText(HttpRequest.DownloadString(External_url.AbsoluteUri, "")));
                 
                 Regex r = new Regex(@"(?<=<img.*?src="").*?(?="".*?>)", RegexOptions.Singleline);
                 MatchCollection collection = r.Matches(request.ToString());
-                Console.Write(" <" + collection.Count.ToString());
+                LogWriter.Write(" <" + collection.Count.ToString());
                 if (collection.Count > 8)
                 {
                     _manifest._storyManifest[0] = "";

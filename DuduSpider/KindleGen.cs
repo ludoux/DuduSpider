@@ -30,9 +30,17 @@ namespace ludoux.DuduSpider
         }
         public void MakePeriodical()
         {
+            LogWriter.WriteLine("Start making .opf File!");
             makeOpfFile();
+            LogWriter.WriteLine("Start making contents.html File!");
             makeContentsFile();
+            LogWriter.WriteLine("Start making .ncx File!");
             makeNcxFile();
+            LogWriter.WriteLine("Start making .mobi File!");
+            if (makeMobiFile())
+                LogWriter.WriteLine("Mobi file: " + Math.Ceiling(new System.IO.FileInfo(@"files\" + title + ".mobi").Length / 1048576.0) + " MByte\r\nAll things have been done successfully!");
+            else
+                LogWriter.WriteLine("Ops...There must be something wrong...");
         }
         private void makeOpfFile()
         {
@@ -187,6 +195,27 @@ namespace ludoux.DuduSpider
             cons.Append(Environment.NewLine + 
 @"    </body>" + Environment.NewLine + "</html>");
             System.IO.File.WriteAllText(@"files\html\contents.html", cons.ToString(), Encoding.UTF8);
+        }
+        private bool makeMobiFile()
+        {
+            
+            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo("kindlegen.exe", Environment.CurrentDirectory + @"\files\" + title + ".opf -c2 -locale en");
+            psi.StandardErrorEncoding = Encoding.UTF8;
+            psi.StandardOutputEncoding = Encoding.UTF8;
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+            psi.RedirectStandardInput = true;
+            psi.CreateNoWindow = true;
+            psi.UseShellExecute = false;
+            System.Diagnostics.Process process;
+            process = System.Diagnostics.Process.Start(psi);
+            process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            
+            if (!System.IO.File.Exists(@"files\" + title + ".mobi") || process.StandardOutput.ReadToEnd().Contains("Error"))
+                return false;//未创建成功
+            else
+                return true;
         }
     }
 }

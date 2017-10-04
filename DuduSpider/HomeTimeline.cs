@@ -37,7 +37,7 @@ namespace ludoux.DuduSpider
             int i = 0;
             foreach (Cell c in cellList)
             {
-                Console.Write("\r\n" + DateTime.Now.TimeOfDay.ToString() + "[" + i++.ToString() + "]" + c.Title);
+                LogWriter.WriteLine("[" + i++.ToString() + "]" + c.Title);
                 storyList.Add(new Story(HttpRequest.DownloadString(string.Format(@"https://news-at.zhihu.com/api/{0}/story/{1}", API, c.Id)), allowedUrlHost, "首页流"));
             }
 

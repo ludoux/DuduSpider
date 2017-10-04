@@ -13,22 +13,25 @@ namespace ludoux.DuduSpider
         
         static void Main(string[] args)
         {
+            LogWriter.WriteLine("======Program Start!!!======");
             string authorization;
             List<Uri> allowedUrlHost = new List<Uri> { new Uri("http://mp.weixin.qq.com") };
             if (args.Length != 2)
             {
-                Console.Write("Start successfully with WRONG ARGS.It should look like\r\n" + @"-f ""authorization string""" + "\r\nFirst arg can be -f(F) -u(U) or -l(L)\r\nRead manual to learn more.\r\n\r\nPress any key to exit.");
+                LogWriter.WriteLine("Start successfully with WRONG ARGS.It should look like\r\n" + @"-f ""authorization string""" + "\r\nFirst arg can be -f(F) -u(U) or -l(L)\r\nRead manual to learn more.\r\n\r\nPress any key to exit.",logFilePath: "");
                 Console.ReadKey();
                 return;
             }
             authorization = args[1];
-            Console.WriteLine("Method: {0}\r\nAuthorization: {1}\r\n", args[0].ToLower(), args[1]);
+            LogWriter.WriteLine(string.Format("Method: {0}\r\nAuthorization: {1}\r\n", args[0].ToLower(), args[1]));
             if (args[0].ToLower() == "-f")
                 firstTime(authorization, allowedUrlHost);
             else if (args[0].ToLower() == "-u")
                 update(authorization, allowedUrlHost);
             else if (args[0].ToLower() == "-l")
                 lastTime(authorization, allowedUrlHost);
+            Console.ReadKey();
+            LogWriter.WriteLine("======Program Exit!!!======");
         }
         private static void firstTime(string authorization, List<Uri> allowedUrlHost)
         {
@@ -104,7 +107,7 @@ namespace ludoux.DuduSpider
         }
         private static void fetch(string authorization, List<Cell> oldHomeTimeline, List<Cell> oldHotStories, List<Uri> allowedUrlHost)
         {
-
+            LogWriter.WriteLine("===Fetching HomeTimeline...===");
             object[] o = HomeTimeline.FetchHomeTimeline(authorization, oldHomeTimeline, allowedUrlHost);
             List<string> line = new List<string>();
             List<Story.Manifestx> m = new List<Story.Manifestx>();//这个合并两次抓取，单独生成文件，后面制作电子书时候用
@@ -119,6 +122,8 @@ namespace ludoux.DuduSpider
             }
             File.AppendAllLines("HomeTimeline_Cell.txt", line, Encoding.UTF8);
             line.Clear();
+
+            LogWriter.WriteLine("===Fetching HotStories...===");
             o = HotStories.FetchHotStories(((List<Cell>)o[1]).Union(oldHotStories).Union(oldHomeTimeline).ToList(), allowedUrlHost);//将首页流（和之前抓的热门流和之前抓的首页流）的信息传递过去，那边会进行去重
             List<Story.Manifestx> tempM = new List<Story.Manifestx>();
             foreach (Story s in (List<Story>)o[0])
