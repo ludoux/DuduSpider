@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Ludoux.DuduSpider
+namespace ludoux.DuduSpider
 {
     
 
@@ -61,10 +60,12 @@ namespace Ludoux.DuduSpider
         /// <summary>
         /// 好像当没有阅读模式时（不确定 type = 2），就要访问这个
         /// </summary>
-        public string External_url { get => storyJson._external_url; }
+        public Uri External_url { get => storyJson._external_url; }
 
+        private List<Uri> _allowedUrlHost;
+        public List<Uri> AllowedUrlHost { get => _allowedUrlHost; }
         public Manifestx Manifest { get => _manifest; }
-        private Manifestx _manifest = new Manifestx();//{下面两个}
+        private Manifestx _manifest = new Manifestx();
         internal class StoryJson
         {
             [JsonProperty("body", NullValueHandling = NullValueHandling.Ignore)]
@@ -95,7 +96,7 @@ namespace Ludoux.DuduSpider
             internal int _type;
 
             [JsonProperty("external_url", NullValueHandling = NullValueHandling.Ignore)]
-            internal string _external_url;
+            internal Uri _external_url;
         }
         internal class Manifestx
         {
@@ -108,8 +109,9 @@ namespace Ludoux.DuduSpider
                 this._storyManifest = storyManifest;
                 this._imageManifest = imageManifest;
             }
-            internal List<string> _storyManifest = new List<string>(2);//{本地地址, 标题} （在“根”目录）./files/html/6F489B596D7686A2.html, 美国核动力航母一直在下饺子，中国想追上非常不容易
+            internal List<string> _storyManifest = new List<string>(3);//{本地地址, 标题, 来源} （在“根”目录）./files/html/6F489B596D7686A2.html, 美国核动力航母一直在下饺子，中国想追上非常不容易, 首页流/热门流
             internal List<string> _imageManifest = new List<string>();//（在“根”目录）./files/image/981639B8C1BB31C5.jpg
+
             public override bool Equals(object obj)
             {
                 return this._storyManifest[0] == ((Manifestx)obj)._storyManifest[0];
@@ -141,8 +143,14 @@ namespace Ludoux.DuduSpider
         /// 初始化就会写 .html 文件啦！
         /// </summary>
         /// <param name="json"></param>
-        public Story(string json)
+        /// <param name="allowedUrlHost"></param>
+        /// <param name="source">首页流/热门流</param>
+        public Story(string json, List<Uri> allowedUrlHost, string source)
         {
+            _allowedUrlHost = allowedUrlHost;
+            _manifest._storyManifest.Add("");
+            _manifest._storyManifest.Add("");
+            _manifest._storyManifest.Add(source);
             StoryJson s = JsonConvert.DeserializeObject<StoryJson>(json);
             if(s != null)
             {
@@ -154,6 +162,7 @@ namespace Ludoux.DuduSpider
 
         public void MakeHtmlFile()
         {
+            
             StringBuilder sb = new StringBuilder();
             if(!Body.Contains("该文章暂不支持阅读模式"))
             {//从 Body 读入F
@@ -172,7 +181,8 @@ namespace Ludoux.DuduSpider
                 Console.Write(" <"+ collection.Count.ToString());
                 if (collection.Count > 8)
                 {
-                    _manifest._storyManifest = new List<string>() { "", "" };
+                    _manifest._storyManifest[0] = "";
+                    _manifest._storyManifest[1] = "";
                     _manifest._imageManifest = new List<string>();
                     return;
                 }
@@ -190,28 +200,33 @@ namespace Ludoux.DuduSpider
                     }
                 }
                 File.WriteAllText(@"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", sb.ToString(), Encoding.UTF8);
-                _manifest._storyManifest = new List<string>() { @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", Title };
+                _manifest._storyManifest[0] = @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html";
+                _manifest._storyManifest[1] = Title;
                 
             }
             else
             {//从 External_url 获取
-                if (!External_url.Contains("mp.weixin.qq.com"))//目前仅分析微信公众号
+                foreach(Uri host in AllowedUrlHost)
                 {
-                    Console.Write(" <外站");
-                    _manifest._storyManifest = new List<string>() { "", "" };
-                    _manifest._imageManifest = new List<string>();
-                    return;
+                    if (External_url.Host != host.Host)//如果外部链接不在allowed列表里，那么就不下载
+                    {
+                        Console.Write(" <白名单外的外站");
+                        _manifest._storyManifest[0] = "";
+                        _manifest._storyManifest[1] = "";
+                        _manifest._imageManifest = new List<string>();
+                        return;
+                    }
                 }
-                    
-                Console.Write(" <微信");
-                StringBuilder request = new StringBuilder(cleanHtmlText(HttpRequest.DownloadString(External_url, "")));
+                Console.Write(" <白名单的外站");
+                StringBuilder request = new StringBuilder(cleanHtmlText(HttpRequest.DownloadString(External_url.AbsoluteUri, "")));
                 
                 Regex r = new Regex(@"(?<=<img.*?src="").*?(?="".*?>)", RegexOptions.Singleline);
                 MatchCollection collection = r.Matches(request.ToString());
                 Console.Write(" <" + collection.Count.ToString());
                 if (collection.Count > 8)
                 {
-                    _manifest._storyManifest = new List<string>() { "", "" };
+                    _manifest._storyManifest[0] = "";
+                    _manifest._storyManifest[1] = "";
                     _manifest._imageManifest = new List<string>();
                     return;
                 }
@@ -230,7 +245,8 @@ namespace Ludoux.DuduSpider
                 request.Replace("data-src", "src");
                 File.WriteAllText(@"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", request.ToString(), Encoding.UTF8);
 
-                _manifest._storyManifest = new List<string> { @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html", Title };
+                _manifest._storyManifest[0] = @"./files/html/" + HashTools.Hash_MD5_16(Title) + ".html";
+                _manifest._storyManifest[1] = Title;
             }
         }
         private string cleanHtmlText(string htmlSource)

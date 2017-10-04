@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Ludoux.DuduSpider
+namespace ludoux.DuduSpider
 {
     class HashTools
     {

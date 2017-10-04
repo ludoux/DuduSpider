@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Ludoux.DuduSpider
+namespace ludoux.DuduSpider
 {
     class KindleGen
     {
         private List<Story.Manifestx> manifestList;
-        private List<object[]> contents;//{string contentLabel, int[] i}每一个 object[] 为一个目录， i 为在 list 中的位置，从 0 算起
+        private List<object[]> contents;//{string contentLabel, List<int> i}每一个 object[] 为一个目录， i 为在 list 中的位置，从 0 算起
         private string title;
         private string language;
         private string creator;
@@ -50,7 +50,7 @@ namespace Ludoux.DuduSpider
 @"        <dc:subject>{5}</dc:subject>" + Environment.NewLine +
 @"        <dc:date>{6}</dc:date>" + Environment.NewLine +
 @"        <dc:description>{7}</dc:description>" + Environment.NewLine +
-@"    </dc-metadata>", title, language, HashTools.Hash_MD5_16(title + date), creator, publisher, subject, date, description);
+@"    </dc-metadata>", title, language, Guid.NewGuid(), creator, publisher, subject, date, description);
             opf.AppendFormat(Environment.NewLine + 
 @"<x-metadata>" + Environment.NewLine +
 @"        <output content-type=""application/x-mobipocket-subscription-magazine"" encoding =""utf-8""/>" + Environment.NewLine +
@@ -98,7 +98,7 @@ namespace Ludoux.DuduSpider
             opf.Append(Environment.NewLine +
 @"</spine>" + Environment.NewLine + 
 @"</package>");
-            System.IO.File.WriteAllText(@".\\files\" + title + ".opf", opf.ToString(), Encoding.UTF8);
+            System.IO.File.WriteAllText(@"files\" + title + ".opf", opf.ToString(), Encoding.UTF8);
         }
         private void makeNcxFile()
         {
@@ -111,7 +111,7 @@ namespace Ludoux.DuduSpider
 @"        <meta content= ""2"" name=""dtb:depth""/>" + Environment.NewLine +
 @"        <meta content= ""0"" name=""dtb:totalPageCount""/>" + Environment.NewLine +
 @"        <meta content= ""0"" name=""dtb:maxPageNumber""/>" + Environment.NewLine +
-@"    </head>", HashTools.Hash_MD5_16(title + date));//我觉得这个值应该是UID
+@"    </head>", Guid.NewGuid());
             ncx.AppendFormat(Environment.NewLine +
 @"    <docTitle>" + Environment.NewLine +
 @"        <text>{0}</text>" + Environment.NewLine +
@@ -138,9 +138,9 @@ namespace Ludoux.DuduSpider
 @"                <navLabel>" + Environment.NewLine +
 @"                    <text>{2}</text>" + Environment.NewLine +
 @"                </navLabel>" + Environment.NewLine +
-@"                <content src=""{3}""/>", playOrder, string.Format("{0:D3}-nav", i + 1), contents[i][0], (manifestList[((int[])contents[i][1])[0]][0])[0].Replace(@"./files/html/", @"../html/"));//{3}为每个目录第一个文章文件路径（网格模式下），丧心病狂般的[]
+@"                <content src=""{3}""/>", playOrder, string.Format("{0:D3}-nav", i + 1), contents[i][0], (manifestList[((List<int>)contents[i][1])[0]][0])[0].Replace(@"./files/html/", @"../html/"));//{3}为每个目录第一个文章文件路径（网格模式下），丧心病狂般的[]
                 playOrder++;
-                for (int j = 0; j < ((int[])contents[i][1]).Length; j++)
+                for (int j = 0; j < ((List<int>)contents[i][1]).Count; j++)
                 {//j 为每个目录内部的文章编号
                     ncx.AppendFormat(Environment.NewLine +
 @"                <navPoint playOrder=""{0}"" class=""article"" id=""{1}"">" + Environment.NewLine +
@@ -148,7 +148,7 @@ namespace Ludoux.DuduSpider
 @"                        <text>{2}</text>" + Environment.NewLine +
 @"                    </navLabel>" + Environment.NewLine +
 @"                    <content src=""{3}""/>" + Environment.NewLine +
-@"                </navPoint>", playOrder, string.Format("{0:D3}-article", articleOrder), (manifestList[((int[])contents[i][1])[j]][0])[1], (manifestList[((int[])contents[i][1])[j]][0])[0].Replace(@"./files/html/", @"../html/"));
+@"                </navPoint>", playOrder, string.Format("{0:D3}-article", articleOrder), (manifestList[((List<int>)contents[i][1])[j]][0])[1], (manifestList[((List<int>)contents[i][1])[j]][0])[0].Replace(@"./files/html/", @"../html/"));
                     playOrder++;
                     articleOrder++;
                 }
@@ -160,7 +160,7 @@ namespace Ludoux.DuduSpider
 @"        </navPoint>" + Environment.NewLine +
 @"    </navMap>" + Environment.NewLine +
 @"</ncx>");
-            System.IO.File.WriteAllText(@".\\files\misc\nav-contents.ncx", ncx.ToString(), Encoding.UTF8);
+            System.IO.File.WriteAllText(@"files\misc\nav-contents.ncx", ncx.ToString(), Encoding.UTF8);
         }
         private void makeContentsFile()
         {
@@ -176,7 +176,7 @@ namespace Ludoux.DuduSpider
                 cons.AppendFormat(Environment.NewLine + 
 @"        <h4 height=""1em"">{0}</h4>" + Environment.NewLine + 
 @"        <ul>", (string)contents[i][0]);
-                for(int j = 0; j< ((int[])contents[i][1]).Length; j++)
+                for(int j = 0; j< ((List<int>)contents[i][1]).Count; j++)
                 {//j 为每个目录内部的文章编号
                     cons.AppendFormat(Environment.NewLine + 
 @"            <li><a href=""{0}"" >{1}</a></li>", (manifestList[j][0])[0].Replace(@"./files/html/", @"./"), (manifestList[j][0])[1]);//Replace 硬替换路径
@@ -186,7 +186,7 @@ namespace Ludoux.DuduSpider
             }
             cons.Append(Environment.NewLine + 
 @"    </body>" + Environment.NewLine + "</html>");
-            System.IO.File.WriteAllText(@".\\files\html\contents.html", cons.ToString(), Encoding.UTF8);
+            System.IO.File.WriteAllText(@"files\html\contents.html", cons.ToString(), Encoding.UTF8);
         }
     }
 }

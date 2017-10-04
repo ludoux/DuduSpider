@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Ludoux.DuduSpider
+namespace ludoux.DuduSpider
 {
     class HomeTimeline
     {
@@ -15,13 +15,13 @@ namespace Ludoux.DuduSpider
         /// <param name="authorization">知乎校验用户身份</param>
         /// <param name="clist">之前抓取时保存的 List Cell（以不抓取这部分），若初始化则抓取保存全部</param>
         /// /// <returns>仅包括这次抓取的内容{ List Story, List Cell }</returns>
-        public static object[] FetchHomeTimeline(string authorization, List<Cell> clist)
+        public static object[] FetchHomeTimeline(string authorization, List<Cell> clist, List<Uri> allowedUrlHost)
         {
             
             List<Story> newSList = new List<Story>();//这次需要抓取的
             List<Cell> newCList = fetchCellListOnly(authorization);
             newCList = newCList.Except(clist).ToList();//在抓取到的首页 cell 中删去抓取过的内容，余下的就是这次需要抓取的
-            return new object[]{fetch(authorization, newCList), newCList};
+            return new object[]{fetch(authorization, newCList, allowedUrlHost), newCList};
         }
         /// <summary>
         ///抓取并保存（.html）提供的 List 列表的消息，内部方法
@@ -29,7 +29,7 @@ namespace Ludoux.DuduSpider
         /// <param name="authorization">知乎校验用户身份</param>
         /// <param name="clist">抓取提供的 List</param>
         /// <returns>仅包括这次抓取的内容</returns>
-        private static List<Story> fetch(string authorization, List<Cell> clist)
+        private static List<Story> fetch(string authorization, List<Cell> clist, List<Uri> allowedUrlHost)
         {
             List<Cell> cellList = clist; ;
             List<Story> storyList = new List<Story>();
@@ -38,16 +38,16 @@ namespace Ludoux.DuduSpider
             foreach (Cell c in cellList)
             {
                 Console.Write("\r\n" + DateTime.Now.TimeOfDay.ToString() + "[" + i++.ToString() + "]" + c.Title);
-                storyList.Add(new Story(HttpRequest.DownloadString(string.Format(@"https://news-at.zhihu.com/api/{0}/story/{1}", API, c.Id))));
+                storyList.Add(new Story(HttpRequest.DownloadString(string.Format(@"https://news-at.zhihu.com/api/{0}/story/{1}", API, c.Id)), allowedUrlHost, "首页流"));
             }
 
-            List<Story> notEmptyList = new List<Story>();
+            List<Story> notEmptyStoryList = new List<Story>();
             foreach (Story s in storyList)
             {
                 if (s.Manifest[0].Count > 0 && s.Manifest[0][0] != "")//为空的就是前面获取时直接 return 的文章，不进入制作电子书的环节
-                    notEmptyList.Add(s);
+                    notEmptyStoryList.Add(s);
             }
-            return notEmptyList;
+            return notEmptyStoryList;
         }
         /// <summary>
         /// 仅抓取首页的 Cell List，内部方法

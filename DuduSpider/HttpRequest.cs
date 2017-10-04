@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 
-namespace Ludoux.DuduSpider
+namespace ludoux.DuduSpider
 {
     class HttpRequest
     {
