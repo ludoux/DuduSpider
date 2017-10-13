@@ -1,12 +1,12 @@
 ﻿能跑起来的！支持增量更新！
 ---
-**.NET CORE 2.0 程序，额外引用 NuGet 依赖项```Newtonsoft.Json(10.0.3)```**
+**[.NET CORE 2.0.0-preview2-25407-01](https://github.com/dotnet/core/blob/master/release-notes/download-archives/2.0.0-preview2-download.md) 程序，额外引用 NuGet 依赖项```Newtonsoft.Json(10.0.3)```**
 
 对于知乎读读日报的抓取推送程序，理论上跨平台
 
 ## Screenshots
 
-![Screenshot@Kindle](https://raw.githubusercontent.com/ludoux/DuduSpider/master/Pic/Screenshot@Kindle.png)
+![TOC-Screenshot@Kindle](https://raw.githubusercontent.com/ludoux/DuduSpider/master/Pic/TOC-Screenshot@Kindle.png)
 
 ![Article Screenshot@Kindle](https://raw.githubusercontent.com/ludoux/DuduSpider/master/Pic/Article-Screenshot@Kindle.png)
 
@@ -34,7 +34,7 @@
 2. "authorization text" 请用抓包软体抓读读日报软体的请求头对应字段
 3. “更新”启动模式就是增量抓取，理论使用顺序是“首次(-f)”-“更新(-u)”*N-“推送(-l)”
 
-## 坑
+## 坑 [![GitHub issues](https://img.shields.io/github/issues/ludoux/DuduSpider.svg)](https://github.com/ludoux/DuduSpider/issues)
 
 1. 目前文件为防止重名和非法字符，文件名均为网络位置文件名或故事标题的 MD5_16 值
 2. 下载图片时，若网页上图片总数大于 8，就不下载此网页和图片，而且直接写 Manifest，后面处理会去掉返回个```notEmptyStoryList```
