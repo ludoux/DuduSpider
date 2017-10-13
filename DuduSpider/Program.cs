@@ -13,7 +13,7 @@ namespace ludoux.DuduSpider
         
         static void Main(string[] args)
         {
-            LogWriter.WriteLine("======Program Start!!!======");
+            LogWriter.WriteLine(Environment.NewLine + "======Program Start!!!======[" + Environment.CurrentDirectory);
             string authorization;
             List<Uri> allowedUrlHost = new List<Uri> { new Uri("http://mp.weixin.qq.com") };
             if (args.Length != 2)
@@ -30,7 +30,6 @@ namespace ludoux.DuduSpider
                 update(authorization, allowedUrlHost);
             else if (args[0].ToLower() == "-l")
                 lastTime(authorization, allowedUrlHost);
-            Console.ReadKey();
             LogWriter.WriteLine("======Program Exit!!!======");
         }
         private static void firstTime(string authorization, List<Uri> allowedUrlHost)
@@ -88,21 +87,14 @@ namespace ludoux.DuduSpider
                 isStoryLine = !isStoryLine;
             }
             int i = 0;
-            List<int> home = new List<int>(), hot = new List<int>();
+            List<int> c = new List<int>();
             foreach (Story.Manifestx mx in m)
             {
-                if (mx._storyManifest[2] == "首页流")
-                    home.Add(i);
-                else if (mx._storyManifest[2] == "热门流")
-                    hot.Add(i);
+                c.Add(i);
                 i++;
             }
-            int[] j = new int[m.Count];
-            for (int k = 0; k < m.Count; k++)
-                j[k] = k;
             List<object[]> contents = new List<object[]>();//{string contentLabel, List<int> i}每一个 object[] 为一个目录， i 为在 list 中的位置，从 0 算起
-            contents.Add(new object[] { "首页流", home });
-            contents.Add(new object[] { "热门流", hot });
+            contents.Add(new object[] { "流", c });//见 https://github.com/ludoux/DuduSpider/issues/1
             new KindleGen(m, "DuduSpider", "zh-cn", "ludoux", "ludoux", "Daily", DateTime.Now.Date.ToString("yyyy-MM-dd"), "Daily", contents).MakePeriodical();
         }
         private static void fetch(string authorization, List<Cell> oldHomeTimeline, List<Cell> oldHotStories, List<Uri> allowedUrlHost)

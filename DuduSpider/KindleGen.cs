@@ -38,9 +38,9 @@ namespace ludoux.DuduSpider
             makeNcxFile();
             LogWriter.WriteLine("Start making .mobi File!");
             if (makeMobiFile())
-                LogWriter.WriteLine("Mobi file: " + Math.Ceiling(new System.IO.FileInfo(@"files\" + title + ".mobi").Length / 1048576.0) + " MByte\r\nAll things have been done successfully!");
+                LogWriter.WriteLine("Mobi file: " + Math.Ceiling(new System.IO.FileInfo(@"files\" + title + ".mobi").Length / 1048576.0) + " MByte.");
             else
-                LogWriter.WriteLine("Ops...There must be something wrong...");
+                LogWriter.WriteLine("Error: Failed to make mobi file.");
         }
         private void makeOpfFile()
         {
@@ -199,7 +199,7 @@ namespace ludoux.DuduSpider
         private bool makeMobiFile()
         {
             
-            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo("kindlegen.exe", Environment.CurrentDirectory + @"\files\" + title + ".opf -c2 -locale en");
+            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo("kindlegen.exe", "-dont_append_source " + Environment.CurrentDirectory + @"\files\" + title + ".opf -c2 -locale en");
             psi.StandardErrorEncoding = Encoding.UTF8;
             psi.StandardOutputEncoding = Encoding.UTF8;
             psi.RedirectStandardOutput = true;
