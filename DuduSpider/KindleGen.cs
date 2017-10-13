@@ -112,7 +112,7 @@ namespace ludoux.DuduSpider
         {
             StringBuilder ncx = new StringBuilder(
 @"<?xml version='1.0' encoding='utf-8'?>" + Environment.NewLine +
-@"<ncx xmlns:mbp=""http://mobipocket.com/ns/mbp"" xmlns =""http://www.daisy.org/z3986/2005/ncx/"" version =""2005-1"">");
+@"<ncx xmlns:mbp=""http://mobipocket.com/ns/mbp"" xmlns=""http://www.daisy.org/z3986/2005/ncx/"" version=""2005-1"">");
             ncx.AppendFormat(Environment.NewLine +
 @"    <head>" + Environment.NewLine +
 @"        <meta content=""{0}"" name=""dtb:uid""/>" + Environment.NewLine +
