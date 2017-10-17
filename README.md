@@ -22,7 +22,7 @@
 - [x] 小范围测试
 - [x] 带命令启动，分为首次/更新/推送三种启动模式
 - [x] 带启动参数运行程序（```-f "authorization text"```，第一个参数支持```-f(F)``` ```-u(U)``` ```-l(L)```分别对应三种启动模式）
-- [ ] 填坑（特别是 Manifestx 有关的）
+- [ ] 填坑 & Fix bugs（特别是 Manifestx 有关的）
 - [ ] 测试上述操作
 - [ ] 为部署做准备，性能优化，异常捕获，容错率
 - [ ] 个人部署测试
@@ -58,6 +58,7 @@
 1. 用 .yml 文件来存储像登陆凭证，图片处理选项，邮箱地址之类的设置
 2. ContentType 希望用键-值类型来存储，两个方向各一个（要为 .jpeg/.jpg 这种异端的存在考虑
 3. 提供存档功能，文件夹记录日期，.mobi 文件可选是否存档，Manifest.txt 要强制存档 3 天来去重
+4. .html 文件下载，使用 readability 正文抽取技术，参考 [luin](https://github.com/luin/readability) 和 [mozilla](https://github.com/mozilla/readability) 的实现
 
 ## LICENSE
 
